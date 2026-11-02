@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ MESES[n.mes] }} {{ n.anio }} · {{ n.empresa }}{% endblock %}
+{% block body %}
+{% if msg == 'guardada' %}<div class="aviso ok">Nómina guardada.</div>{% endif %}
+<div class="head">
+  <div>
+    <p class="muted small" style="margin:0"><a href="/?anio={{ n.anio }}">← Panel {{ n.anio }}</a></p>
+    <h1>{{ MESES[n.mes] }} {{ n.anio }} <span class="muted" style="font-weight:400">· {{ n.empresa }}</span></h1>
+    <span class="badge neutral">{{ n.tipo }}</span>
+    <span class="badge neutral">{{ 'PDF' if n.origen == 'pdf' else 'Manual' }}</span>
+    {% if n.cuadra %}<span class="badge ok">Cuadra</span>{% else %}<span class="badge bad">No cuadra</span>{% endif %}
+  </div>
+  <div class="acciones">
+    {% if n.archivo %}<a class="btn" href="/nomina/{{ n.id }}/pdf" target="_blank" rel="noopener">Ver PDF original</a>{% endif %}
+    <a class="btn" href="/nomina/{{ n.id }}/editar">Editar</a>
+    <form method="post" action="/nomina/{{ n.id }}/borrar" onsubmit="return confirm('¿Borrar esta nómina{{ ' y su PDF' if n.archivo }}?')">
+      <button class="btn danger">Borrar</button></form>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="lbl">Total devengado</div><div class="val">{{ n.total_devengado|eur }}</div>
+    <div class="sub">Salarial {{ d.salarial|eur }}{% if d.no_salarial %} · otros {{ d.no_salarial|eur }}{% endif %}</div></div>
+  <div class="kpi"><div class="lbl">Seg. Social</div><div class="val">{{ d.ss|eur }}</div>
+    <div class="sub">Base C.C. {{ n.base_cc|eur }}</div></div>
+  <div class="kpi"><div class="lbl">IRPF</div><div class="val">{{ d.irpf|eur }}</div>
+    <div class="sub">{{ n.irpf_pct|pct }} sobre {{ n.base_irpf|eur }}</div></div>
+  <div class="kpi hero"><div class="lbl">Líquido</div><div class="val">{{ n.liquido|eur }}</div>
+    <div class="sub">{% if n.coste_empresa %}Coste empresa {{ n.coste_empresa|eur }}{% endif %}</div></div>
+</div>
+
+<div class="grid g2">
+  <div class="card">
+    <h2>Conceptos</h2>
+    <div class="tabla-wrap"><table>
+      <thead><tr><th>Cód.</th><th>Concepto</th><th class="num">Devengo</th><th class="num">Deducción</th></tr></thead>
+      <tbody>
+      {% for cat, (nombre, clase) in CATEGORIAS.items() %}
+        {% set ls = n.lineas | selectattr('categoria', 'equalto', cat) | list %}
+        {% if ls %}
+          <tr class="cat-h"><td colspan="4">{{ nombre }}</td></tr>
+          {% for l in ls %}
+          <tr><td class="muted">{{ l.codigo }}</td><td>{{ l.concepto }}</td>
+              <td class="num">{{ l.importe|eur if clase != 'deduccion' else '' }}</td>
+              <td class="num">{{ l.importe|eur if clase == 'deduccion' else '' }}</td></tr>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><td></td><td>Totales</td><td class="num">{{ d.devengado_calc|eur }}</td><td class="num">{{ d.deducir_calc|eur }}</td></tr></tfoot>
+    </table></div>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Comprobaciones</h2>
+      <ul class="checks">
+      {% for c in checks %}
+        {% set e = 'ok' if c.ok else ('bad' if c.estricta else 'warn') %}
+        <li class="{{ e }}"><span class="ico">{{ '✓' if c.ok else ('✗' if c.estricta else '!') }}</span>
+          <span>{{ c.texto }}</span>
+          <span class="det">{% if c.ok %}{{ c.calculado|eur(False) }}{% else %}impreso {{ c.impreso|eur(False) }} · calc. {{ c.calculado|eur(False) }}{% endif %}</span></li>
+      {% endfor %}
+      </ul>
+    </div>
+    {% if n.notas %}<div class="card"><h2>Notas</h2><p style="margin:0;white-space:pre-wrap">{{ n.notas }}</p></div>{% endif %}
+    <p class="muted small">Registrada el {{ n.creado }}{% if n.dias %} · {{ n.dias }} días{% endif %}</p>
+  </div>
+</div>
+{% endblock %}

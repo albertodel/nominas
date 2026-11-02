@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+data/
+.env
+# Nunca subir nóminas reales al repositorio
+*.pdf
+*.zip

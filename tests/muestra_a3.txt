@@ -1,0 +1,73 @@
+                                                                                                                           XXXXXXXXXXX, XXXXXXX
+
+
+
+
+NIF/CIF: AXXXXXXX
+
+
+                  EMPRESA                                                     DOMICILIO                                             Nº INSCRIPCIÓN S.S.
+
+ EMPRESA EJEMPLO, S.A.                           CL EJEMPLO S/N                                                                          00/0000000-00
+
+                 TRABAJADOR                                 CATEGORIA                        PUESTO DE TRABAJO               ANTIGÜEDAD                   D.N.I.
+
+ XXXXXXXXXXX, XXXXXXX                                   GRUPO X                         PUESTO EJEMPLO                     01/01/2020              XXXXXXXX
+
+   Nº AFILIACIÓN S.S.          TARIFA         CNAE         SECCIÓN         NRO.                             PERIODO                                     TOT.DÍAS
+
+     00/00000000-00                7          0000         000000          000000           Mensual - 1 Octubre 2026 a 31 Octubre 2026                      30
+
+  CUANTIA            PRECIO                                              CONCEPTO                                         DEVENGOS                  DEDUCCIONES
+
+         30,00             35,00          1    *Salario Base                                                                         1050,00
+         30,00              3,33          3    *Plus Convenio                                                                         100,00
+         30,00              3,00         88    -Dietas y o kilometraje                                                                 90,00
+         30,00              5,00         98    *Comp. Bruto                                                                           150,00
+         30,00              2,67        150    *Guardias                                                                               80,00
+         30,00              3,17        301    *Paga extra 1                                                                           95,00
+         30,00              3,17        302    *Paga extra 2                                                                           95,00
+                                               Cotización Contingencias Comunes (4,70%)                                                                             73,79
+                                               Cotización Mecanismo Equidad Intergeneracional (0,15%)                                                                2,36
+                                               Cotización Formación Profesional (0,10%)                                                                              1,57
+                                               Cotización Desempleo (1,55%)                                                                                         24,34
+                                               Tributación IRPF (12,00%)                                                                                           188,40
+
+
+
+
+   REM. TOTAL             P.P. EXTRAS                BASE C.C.            BASE A.T. Y DES          BASE I.R.P.F.        T. DEVENGADO                 T. A DEDUCIR
+
+     1570,00                                          1570,00                 1570,00                 1570,00               1660,00                       290,46
+  FECHA                                                    SELLO EMPRESA                           RECIBI
+  sábado, 31 de Octubre de 2026
+                                                                                                                                  Líquido a Percibir
+  LOCALIDAD            
+
+                                                                                                                                                       1369,54
+
+
+                                                                                                                                  Coste Empresa: 2196,05
+
+
+  BANCO: BANCO EJEMPLO                                                                                                   *Percepciones Salariales sujetas a Cot S.S.
+  CUENTA: ********************0000                                                                                       -Percepciones no Salariales excluidas Cot S.S
+                                                                                                                         **Estos conceptos son informativos
+    DETERMINACIÓN DE LAS BASES DE COTIZACIÓN A LA S.S. Y CONCEPTOS DE RECAUDACIÓN CONJUNTA Y DE LA BASE SUJETA A RETENCIÓN DEL IRPF Y APORTACIÓN DE LA EMPRESA
+
+                                        CONCEPTO                                                       BASE                 TIPO            APORTACIÓN EMPRESA
+ Contingencias Comunes
+            Importe remuneración mensual                   1570,00
+            Importe prorrata pagas extraordinarias
+            Base ERTE
+            Base Incapacidad Temporal                                             Total               1570,00               23,60%                    370,52
+            Mecanismo Equidad Intergeneracional                                                       1570,00                0,75%                     11,78
+            Cotización Adicional de Solidaridad
+ Contingencias Profesionales
+            AT y EP                                                                                   1570,00                5,15%                     80,86
+            Desempleo                                                                                 1570,00                5,50%                     86,35
+            Formación Profesional                                                                     1570,00                0,60%                      9,42
+            Fondo de garantía salarial                                                                1570,00                0,20%                      3,14
+ Base de cotización adicional por horas extraordinarias
+ Base sujeta a retención I.R.P.F.                                                                     1570,00
+

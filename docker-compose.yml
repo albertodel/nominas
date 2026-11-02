@@ -1,0 +1,20 @@
+# Stack de Portainer: "nominas"
+# Cambia TU_USUARIO por tu usuario de GitHub (en minúsculas).
+# APP_USER y APP_PASSWORD_HASH se rellenan en "Environment variables" del stack,
+# así nunca acaban en el repositorio.
+services:
+  nominas:
+    image: ghcr.io/TU_USUARIO/nominas:latest
+    container_name: nominas
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Madrid
+      - APP_USER=${APP_USER}
+      - APP_PASSWORD_HASH=${APP_PASSWORD_HASH}
+    ports:
+      - "8087:8000"
+    volumes:
+      - nominas_data:/data
+
+volumes:
+  nominas_data:

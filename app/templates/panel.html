@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Nóminas {{ anio }}{% endblock %}
+{% block body %}
+{% if msg == 'borrada' %}<div class="aviso ok">Nómina borrada.</div>{% endif %}
+
+<div class="head">
+  <div>
+    <h1>Nóminas {{ anio }}</h1>
+    <div class="filtros" style="margin-top:.5rem">
+      {% for a in anios %}<a class="chip {{ 'on' if a == anio }}" href="/?anio={{ a }}{{ '&empresa=' ~ empresa|urlencode if empresa }}">{{ a }}</a>{% endfor %}
+      {% if empresas|length > 1 %}
+        <span class="muted small" style="margin-left:.5rem">Empresa:</span>
+        <a class="chip {{ 'on' if not empresa }}" href="/?anio={{ anio }}">Todas</a>
+        {% for e in empresas %}<a class="chip {{ 'on' if e == empresa }}" href="/?anio={{ anio }}&empresa={{ e|urlencode }}">{{ e }}</a>{% endfor %}
+      {% endif %}
+    </div>
+  </div>
+  <div class="acciones">
+    {% if filas %}<a class="btn" href="/export.csv?anio={{ anio }}">Exportar CSV</a>{% endif %}
+    <a class="btn primary" href="/subir">Subir nómina</a>
+  </div>
+</div>
+
+{% if not filas %}
+<div class="card vacio">
+  <h2>Aún no hay nóminas en {{ anio }}</h2>
+  <p>Sube el PDF de A3 o mete a mano la nómina en papel.</p>
+  <div class="acciones" style="justify-content:center">
+    <a class="btn primary" href="/subir">Subir PDF</a><a class="btn" href="/nueva">Entrada manual</a>
+  </div>
+</div>
+{% else %}
+
+<div class="kpis">
+  <div class="kpi"><div class="lbl">Total devengado</div><div class="val">{{ total.total_devengado|eur }}</div>
+    <div class="sub">{{ total.n }} nómina{{ 's' if total.n != 1 }}</div></div>
+  <div class="kpi"><div class="lbl">Otros cobros</div><div class="val">{{ total.no_salarial|eur }}</div>
+    <div class="sub">No salariales (dietas, km…)</div></div>
+  <div class="kpi"><div class="lbl">Seg. Social</div><div class="val">{{ total.ss|eur }}</div>
+    <div class="sub">Cuota del trabajador</div></div>
+  <div class="kpi"><div class="lbl">IRPF retenido</div><div class="val">{{ total.irpf|eur }}</div>
+    <div class="sub">Tipo efectivo {{ total.tipo_irpf|pct }}</div></div>
+  <div class="kpi hero"><div class="lbl">Líquido cobrado</div><div class="val">{{ total.liquido|eur }}</div>
+    <div class="sub">{% if total.coste_empresa %}Coste empresa {{ total.coste_empresa|eur }}{% endif %}</div></div>
+</div>
+
+<div class="grid g2">
+  <div class="card">
+    <h2>A dónde va el bruto, mes a mes</h2>
+    <div class="leyenda" id="leyenda"></div>
+    <div class="chart-box"><canvas id="g-barras" aria-label="Gráfica de barras apiladas por mes" role="img"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>Por empresa · {{ anio }}</h2>
+    <p class="muted small" style="margin-top:-.4rem">Totales para cuadrar con el certificado de retenciones de cada pagador.</p>
+    {% for e in por_empresa %}
+    <div class="pagador">
+      <a class="nombre" href="/?anio={{ anio }}&empresa={{ e.empresa|urlencode }}">{{ e.empresa }}</a>
+      <span class="muted small">{{ e.n }} nómina{{ 's' if e.n != 1 }}</span>
+      <dl>
+        <div><dt>Devengado</dt><dd>{{ e.total_devengado|eur }}</dd></div>
+        <div><dt>IRPF · {{ e.tipo_irpf|pct }}</dt><dd>{{ e.irpf|eur }}</dd></div>
+        <div><dt>Seg. Social</dt><dd>{{ e.ss|eur }}</dd></div>
+        <div><dt>Líquido</dt><dd>{{ e.liquido|eur }}</dd></div>
+      </dl>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card" id="card-irpf">
+  <h2>Tipo de IRPF aplicado</h2>
+  <div class="leyenda" id="leyenda-irpf"></div>
+  <div class="chart-box" style="height:220px"><canvas id="g-irpf" aria-label="Evolución del porcentaje de IRPF" role="img"></canvas></div>
+</div>
+
+<div class="card">
+  <h2>Detalle{{ ' · ' ~ empresa if empresa }}</h2>
+  <div class="tabla-wrap"><table>
+    <thead><tr><th>Mes</th><th>Empresa</th><th class="num">Salarial</th><th class="num">Otros cobros</th>
+      <th class="num">S.S.</th><th class="num">IRPF</th><th class="num">%</th><th class="num">Líquido</th><th></th></tr></thead>
+    <tbody>{% for f in filas %}
+      <tr>
+        <td><a href="/nomina/{{ f.id }}">{{ MESES[f.mes] }}</a>{% if f.tipo != 'Mensual' %} <span class="badge neutral">{{ f.tipo }}</span>{% endif %}</td>
+        <td>{{ f.empresa }}</td>
+        <td class="num">{{ f.salarial|eur }}</td>
+        <td class="num">{{ f.no_salarial|eur if f.no_salarial else '—' }}</td>
+        <td class="num">{{ f.ss|eur }}</td>
+        <td class="num">{{ f.irpf|eur }}</td>
+        <td class="num muted">{{ f.irpf_pct|pct }}</td>
+        <td class="num"><strong>{{ f.liquido|eur }}</strong></td>
+        <td>{% if not f.cuadra %}<span class="badge bad" title="Las cuentas no cuadran">!</span>{% endif %}</td>
+      </tr>{% endfor %}</tbody>
+    <tfoot><tr><td colspan="2">Total</td><td class="num">{{ total.salarial|eur }}</td><td class="num">{{ total.no_salarial|eur }}</td>
+      <td class="num">{{ total.ss|eur }}</td><td class="num">{{ total.irpf|eur }}</td><td class="num muted">{{ total.tipo_irpf|pct }}</td>
+      <td class="num">{{ total.liquido|eur }}</td><td></td></tr></tfoot>
+  </table></div>
+</div>
+<script id="datos" type="application/json">{{ grafica_json|safe }}</script>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if filas %}
+<script src="/static/vendor/chart.umd.min.js"></script>
+<script src="/static/panel.js"></script>
+{% endif %}
+{% endblock %}

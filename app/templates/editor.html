@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if nomina_id else 'Revisar' }} nómina · Nóminas{% endblock %}
+{% block body %}
+<div class="head">
+  <div>
+    <h1>{% if nomina_id %}Editar nómina{% elif n.origen == 'pdf' %}Revisa los datos extraídos{% else %}Entrada manual{% endif %}</h1>
+    <p class="muted" style="margin:0">
+      {% if n.origen == 'pdf' and not nomina_id %}Comprueba que todo coincide con el PDF antes de guardar.
+      {% else %}Copia las líneas de la nómina tal cual. Las comprobaciones se actualizan mientras escribes.{% endif %}
+    </p>
+  </div>
+</div>
+
+{% if errores %}<div class="aviso bad"><strong>No se ha guardado:</strong><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+{% for a in n.avisos or [] %}<div class="aviso warn">{{ a }}</div>{% endfor %}
+{% if duplicado and duplicado != nomina_id and not errores %}
+<div class="aviso warn">Ya tienes guardada esta nómina (<a href="/nomina/{{ duplicado }}">ver</a>). Si guardas, marca «Sobrescribir» para reemplazarla.</div>
+{% endif %}
+
+<form method="post" action="/guardar" id="editor" autocomplete="off">
+  <input type="hidden" name="nomina_id" value="{{ nomina_id or '' }}">
+  <input type="hidden" name="tmp_token" value="{{ tmp_token }}">
+  <input type="hidden" name="origen" value="{{ n.origen or 'manual' }}">
+
+  <div class="card">
+    <h2>Periodo</h2>
+    <div class="campos">
+      <div class="ancho"><label for="empresa">Empresa</label>
+        <input id="empresa" name="empresa" list="empresas" value="{{ n.empresa or '' }}" required>
+        <datalist id="empresas">{% for e in empresas %}<option value="{{ e }}">{% endfor %}</datalist></div>
+      <div><label for="mes">Mes</label>
+        <select id="mes" name="mes">{% for m in range(1,13) %}<option value="{{ m }}" {{ 'selected' if n.mes == m }}>{{ MESES[m] }}</option>{% endfor %}</select></div>
+      <div><label for="anio">Año</label><input id="anio" name="anio" type="number" min="2000" max="2100" value="{{ n.anio or '' }}" required></div>
+      <div><label for="tipo">Tipo</label>
+        <select id="tipo" name="tipo">{% for t in TIPOS %}<option value="{{ t }}" {{ "selected" if n.tipo == t }}>{{ t }}</option>{% endfor %}
+        {% if n.tipo and n.tipo not in TIPOS %}<option value="{{ n.tipo }}" selected>{{ n.tipo }}</option>{% endif %}</select></div>
+      <div><label for="dias">Días</label><input id="dias" name="dias" type="number" min="0" max="31" value="{{ n.dias if n.dias is not none else '' }}"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="acciones" style="justify-content:space-between;margin-bottom:.5rem">
+      <h2 style="margin:0">Conceptos</h2>
+      <button type="button" class="btn sm" id="add">+ Añadir línea</button>
+    </div>
+    <div class="tabla-wrap">
+    <table id="lineas">
+      <thead><tr><th>Tipo</th><th>Cód.</th><th>Concepto</th><th class="num">Importe</th><th></th></tr></thead>
+      <tbody>
+      {% for l in n.lineas %}
+        <tr>
+          <td><select name="l_cat">{% for k, v in CATEGORIAS.items() %}<option value="{{ k }}" {{ 'selected' if l.categoria == k }}>{{ v[0] }}</option>{% endfor %}</select></td>
+          <td class="c-cod"><input name="l_cod" value="{{ l.codigo or '' }}"></td>
+          <td><input name="l_concepto" value="{{ l.concepto }}"></td>
+          <td class="c-imp"><input class="imp" name="l_importe" inputmode="decimal" value="{{ l.importe|num }}"></td>
+          <td><button type="button" class="btn link del" title="Quitar línea">✕</button></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="muted small" style="margin:.6rem 0 0">Importes con coma decimal (1180,17). «Informativo» se guarda pero no suma.</p>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="acciones" style="justify-content:space-between;margin-bottom:.5rem">
+        <h2 style="margin:0">Totales impresos en la nómina</h2>
+        <button type="button" class="btn sm" id="autototal" title="Rellena devengado, deducciones y líquido con las sumas de las líneas">Calcular desde líneas</button>
+      </div>
+      <div class="campos">
+        <div><label>Total devengado</label><input class="imp" name="total_devengado" inputmode="decimal" value="{{ n.total_devengado|num }}"></div>
+        <div><label>Total a deducir</label><input class="imp" name="total_deducir" inputmode="decimal" value="{{ n.total_deducir|num }}"></div>
+        <div><label>Líquido a percibir</label><input class="imp" name="liquido" inputmode="decimal" value="{{ n.liquido|num }}"></div>
+        <div><label>Base IRPF</label><input class="imp" name="base_irpf" inputmode="decimal" value="{{ n.base_irpf|num }}"></div>
+        <div><label>% IRPF</label><input class="imp" name="irpf_pct" inputmode="decimal" value="{{ n.irpf_pct|num }}"></div>
+        <div><label>Base cotización (C.C.)</label><input class="imp" name="base_cc" inputmode="decimal" value="{{ n.base_cc|num }}"></div>
+        <div><label>Coste empresa</label><input class="imp" name="coste_empresa" inputmode="decimal" value="{{ n.coste_empresa|num }}"></div>
+      </div>
+      <div style="margin-top:.8rem"><label for="notas">Notas</label><textarea id="notas" name="notas" rows="2">{{ n.notas or '' }}</textarea></div>
+    </div>
+    <div class="card">
+      <h2>Comprobaciones</h2>
+      <ul class="checks" id="checks"></ul>
+      <p class="muted small" style="margin:.6rem 0 0" id="resumen-lineas"></p>
+    </div>
+  </div>
+
+  <div class="sticky-bar">
+    <button class="btn primary">Guardar nómina</button>
+    <label class="check"><input type="checkbox" name="forzar" id="forzar"> Guardar aunque no cuadre</label>
+    {% if duplicado and duplicado != nomina_id %}<label class="check"><input type="checkbox" name="sobrescribir"> Sobrescribir la existente</label>{% endif %}
+    <a class="btn link" href="{{ '/nomina/%d' % nomina_id if nomina_id else '/' }}">Cancelar</a>
+  </div>
+</form>
+
+<template id="fila">
+  <tr>
+    <td><select name="l_cat">{% for k, v in CATEGORIAS.items() %}<option value="{{ k }}">{{ v[0] }}</option>{% endfor %}</select></td>
+    <td class="c-cod"><input name="l_cod"></td>
+    <td><input name="l_concepto"></td>
+    <td class="c-imp"><input class="imp" name="l_importe" inputmode="decimal"></td>
+    <td><button type="button" class="btn link del" title="Quitar línea">✕</button></td>
+  </tr>
+</template>
+{% endblock %}
+{% block scripts %}<script src="/static/editor.js"></script>{% endblock %}

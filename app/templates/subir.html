@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Subir PDF · Nóminas{% endblock %}
+{% block body %}
+<div class="head"><div><h1>Subir nómina en PDF</h1>
+<p class="muted" style="margin:0">PDF con texto seleccionable (A3). Los datos se extraen aquí, en la Pi: nada sale de casa.</p></div></div>
+{% if error %}<div class="aviso bad">{{ error }}</div>{% endif %}
+<form method="post" action="/subir" enctype="multipart/form-data" id="f">
+  <label class="drop" id="drop">
+    <input type="file" name="archivo" accept="application/pdf,.pdf" id="archivo">
+    <strong>Arrastra el PDF aquí o haz clic para elegirlo</strong>
+    <span class="muted small" id="nombre">Máximo 15 MB</span>
+  </label>
+  <p class="muted small">Después podrás revisar y corregir cada dato antes de guardarlo. ¿Nómina en papel? Usa la <a href="/nueva">entrada manual</a>.</p>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+const drop = document.getElementById('drop'), inp = document.getElementById('archivo');
+const enviar = () => { document.getElementById('nombre').textContent = 'Leyendo ' + inp.files[0].name + '…'; document.getElementById('f').submit(); };
+inp.addEventListener('change', () => inp.files.length && enviar());
+['dragenter','dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', ev => { if (ev.dataTransfer.files.length) { inp.files = ev.dataTransfer.files; enviar(); } });
+</script>
+{% endblock %}
